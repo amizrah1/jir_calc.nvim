@@ -40,8 +40,22 @@ function M.open_window()
 
   -- Capture user input
   vim.api.nvim_buf_set_keymap(cmd_buf, "i", "<CR>", "<cmd>lua require'jir_calc.command'.handle_command()<CR>", { noremap = true, silent = true })
+  vim.api.nvim_buf_set_keymap(cmd_buf, "i", "<Esc>", "<cmd>lua require'jir_calc.window'.close_windows()<CR>", { noremap = true, silent = true })
+  vim.api.nvim_buf_set_keymap(cmd_buf, "n", "<Esc>", "<cmd>lua require'jir_calc.window'.close_windows()<CR>", { noremap = true, silent = true })
 
   return win, cmd_win
+end
+
+-- Function to close both floating windows
+function M.close_windows()
+  local wins = vim.api.nvim_list_wins()
+  for _, win in ipairs(wins) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    local buf_name = vim.api.nvim_buf_get_name(buf)
+    if buf_name == "" then
+      vim.api.nvim_win_close(win, true)
+    end
+  end
 end
 
 return M
