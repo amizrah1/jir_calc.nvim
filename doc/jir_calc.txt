@@ -1,0 +1,14 @@
+*jir_calc.txt*    Plugin for Neovim
+
+jir_calc.nvim
+=============
+
+This plugin provides a floating window with a command input area at the bottom.
+
+Usage:
+------
+Run `:lua require('jir_calc.window').open_window()` to open the floating window.
+
+Author:
+-------
+Jir
