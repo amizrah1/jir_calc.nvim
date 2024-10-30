@@ -39,9 +39,13 @@ function M.open_window()
   vim.api.nvim_buf_set_option(cmd_buf, "bufhidden", "wipe")
 
   -- Capture user input
-  vim.api.nvim_buf_set_keymap(cmd_buf, "i", "<CR>", "<cmd>lua require'jir_calc.command'.handle_command()<CR>", { noremap = true, silent = true })
+  vim.api.nvim_buf_set_keymap(cmd_buf, "i", "<CR>", "<cmd>lua require'jir_calc.command'.handle_command(" .. win .. ")<CR>", { noremap = true, silent = true })
   vim.api.nvim_buf_set_keymap(cmd_buf, "i", "<Esc>", "<cmd>lua require'jir_calc.window'.close_windows()<CR>", { noremap = true, silent = true })
   vim.api.nvim_buf_set_keymap(cmd_buf, "n", "<Esc>", "<cmd>lua require'jir_calc.window'.close_windows()<CR>", { noremap = true, silent = true })
+
+  -- Switch to insert mode in the command input window
+  vim.api.nvim_set_current_win(cmd_win)
+  vim.api.nvim_command('startinsert')
 
   return win, cmd_win
 end
