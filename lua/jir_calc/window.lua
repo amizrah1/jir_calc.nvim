@@ -1,7 +1,10 @@
 local M = {}
+local common = require('jir_calc.shared')
 
 -- Function to open a floating window
 function M.open_window()
+    -- Define the highlight group
+
     local buf = vim.api.nvim_create_buf(false, true)
     local width = vim.api.nvim_get_option("columns")
     local height = vim.api.nvim_get_option("lines")
@@ -26,6 +29,25 @@ function M.open_window()
 
     local win = vim.api.nvim_open_win(main_buf, true, opts)
     vim.api.nvim_buf_set_option(main_buf, "bufhidden", "wipe")
+
+    -- Create a header for the main buffer
+    local header_buf = vim.api.nvim_create_buf(false, true)
+    -- Calculate padding to center the title
+    local title = "Jir Calculator"
+    local padding = math.floor((win_width - 2 - #title) / 2)
+    local centered_title = string.rep(" ", padding) .. title
+    vim.api.nvim_buf_set_lines(header_buf, -3, -1, false, { centered_title })
+    local header_opts = {
+        style = "minimal",
+        relative = "editor",
+        width = win_width + 2,
+        height = win_height + 6,
+        row = row - 2,
+        col = col - 1,
+        border = "single",
+    }
+    vim.api.nvim_open_win(header_buf, false, header_opts)
+    vim.api.nvim_buf_add_highlight(header_buf, -1, common.HL_Header, 0, padding, padding + #title)
 
     -- Create a command input area at the bottom
     local cmd_buf = vim.api.nvim_create_buf(false, true)
@@ -68,3 +90,6 @@ function M.close_windows()
 end
 
 return M
+
+
+

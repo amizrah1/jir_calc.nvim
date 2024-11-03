@@ -5,11 +5,6 @@ local function is_empty_or_spaces(str)
     return str:match("^%s*$") ~= nil
 end
 
-local function expr_prep(calc_expr)
-    local value = calc_expr
-    return value
-end
-
 -- Function to handle user commands
 function M.handle_command(main_win)
     local cmd_buf = vim.api.nvim_get_current_buf()
