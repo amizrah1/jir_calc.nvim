@@ -10,11 +10,8 @@ end
 function M.handle_command(main_win)
     local cmd_buf = vim.api.nvim_get_current_buf()
     local expr = vim.api.nvim_buf_get_lines(cmd_buf, 0, -1, false)[1]
-    local output_string
 
-    -- Strip the leading '> ' from the expression
-    expr = expr:sub(3)
-
+    expr = expr:sub(3) -- Strip the leading '> ' from the expression
     if is_empty_or_spaces(expr) then
         vim.api.nvim_err_writeln('Error: Empty expression')
     else

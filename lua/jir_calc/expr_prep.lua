@@ -57,9 +57,9 @@ end
 
 local function split_expression(expression)
     local result = {}
-    local pattern = '([+\\-*/^()])'
+    local pattern = '([*^/+\\-])'
     -- Use gmatch to iterate over the parts of the expression
-    for part in expression:gmatch('[^+\\-*/^()]+') do
+    for part in expression:gmatch("[^*^/+\\-]+") do
         table.insert(result, part)
     end
     -- Use gsub to insert the delimiters into the result table
@@ -79,7 +79,7 @@ function M.expr_prep(input_string)
     local calc_string
     local after_eq
 
-    local words_array = split_expression('A+B/C*D-E*F')
+    local words_array = split_expression('C*D-E*F+A/B-AB^AC')
     print('Array of words:')
     for i, word in ipairs(words_array) do
         print(i, word)
