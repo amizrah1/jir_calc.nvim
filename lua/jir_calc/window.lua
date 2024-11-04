@@ -14,6 +14,7 @@ function M.open_window()
     -- Pre-fill the main buffer with empty lines to position the first result at the bottom
     local main_buf = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_lines(main_buf, 0, -1, false, vim.fn['repeat']({' '}, win_height - 1))
+    local title = ' Jir Calculator '
 
     local opts = {
         style = 'minimal',
@@ -22,30 +23,14 @@ function M.open_window()
         height = win_height,
         row = row,
         col = col,
-        border = 'single',
+        border = 'rounded',
+        focusable = false,
+        title = title,
+        title_pos = 'center',
     }
 
     local win = vim.api.nvim_open_win(main_buf, true, opts)
     vim.api.nvim_buf_set_option(main_buf, 'bufhidden', 'wipe')
-
-    -- Create a header for the main buffer
-    local header_buf = vim.api.nvim_create_buf(false, true)
-    -- Calculate padding to center the title
-    local title = 'Jir Calculator'
-    local padding = math.floor((win_width - 2 - #title) / 2)
-    local centered_title = string.rep(' ', padding) .. title
-    vim.api.nvim_buf_set_lines(header_buf, -3, -1, false, { centered_title })
-    local header_opts = {
-        style = 'minimal',
-        relative = 'editor',
-        width = win_width + 2,
-        height = win_height + 6,
-        row = row - 2,
-        col = col - 1,
-        border = 'single',
-    }
-    vim.api.nvim_open_win(header_buf, false, header_opts)
-    vim.api.nvim_buf_add_highlight(header_buf, -1, common.HL_Header, 0, padding, padding + #title)
 
     -- Create a command input area at the bottom
     local cmd_buf = vim.api.nvim_create_buf(false, true)
@@ -56,7 +41,7 @@ function M.open_window()
         height = 1,
         row = row + win_height + 2,
         col = col,
-        border = 'single',
+        border = 'rounded',
     }
     local cmd_win = vim.api.nvim_open_win(cmd_buf, true, cmd_opts)
     vim.api.nvim_buf_set_option(cmd_buf, 'bufhidden', 'wipe')
@@ -66,8 +51,6 @@ function M.open_window()
     vim.api.nvim_buf_set_keymap(cmd_buf, 'i', '<CR>', "<cmd>lua require'jir_calc.command'.handle_command(" .. win .. ")<CR>", { noremap = true, silent = true })
     vim.api.nvim_buf_set_keymap(main_buf, 'i', '<Esc>', "<cmd>lua require'jir_calc.window'.close_windows()<CR>", { noremap = true, silent = true })
     vim.api.nvim_buf_set_keymap(main_buf, 'n', '<Esc>', "<cmd>lua require'jir_calc.window'.close_windows()<CR>", { noremap = true, silent = true })
-    vim.api.nvim_buf_set_keymap(header_buf, 'i', '<Esc>', "<cmd>lua require'jir_calc.window'.close_windows()<CR>", { noremap = true, silent = true })
-    vim.api.nvim_buf_set_keymap(header_buf, 'n', '<Esc>', "<cmd>lua require'jir_calc.window'.close_windows()<CR>", { noremap = true, silent = true })
     vim.api.nvim_buf_set_keymap(cmd_buf, 'i', '<Esc>', "<cmd>lua require'jir_calc.window'.close_windows()<CR>", { noremap = true, silent = true })
     vim.api.nvim_buf_set_keymap(cmd_buf, 'n', '<Esc>', "<cmd>lua require'jir_calc.window'.close_windows()<CR>", { noremap = true, silent = true })
 

@@ -43,9 +43,22 @@ local function dec_to_bin(num)
     return binary == '' and '0' or binary
 end
 
+local function add_underscores_every_4_chars(input_str)
+    local reversed_str = input_str:reverse()
+    local with_underscores = reversed_str:gsub("(%d%d%d%d)", "%1_")
+    local result_str = with_underscores:reverse()
+    if result_str:sub(1, 1) == "_" then
+        result_str = result_str:sub(2)
+    end
+    return result_str
+end
+
 function M.convert_result(result_str, result_base)
     if result_base == '0b' then
         result_str = dec_to_bin(tonumber(result_str))
+        if common.underscore then
+            result_str = add_underscores_every_4_chars(result_str)
+        end
     elseif result_base == '0x' then
         result_str = string.format('%X', tonumber(result_str))
     elseif result_base == '' then
@@ -58,11 +71,11 @@ end
 local function split_expression(expression)
     local result = {}
     -- Use gmatch to iterate over the parts of the expression
-    for part in expression:gmatch("[^*^/+\\-]+") do
+    for part in expression:gmatch("[^<*^/+\\-]+") do
         table.insert(result, part)
     end
     -- Use gsub to insert the delimiters into the result table
-    local pattern = '([*^/+\\-])'
+    local pattern = '([<*^/+\\-])'
     local index = 2
     expression:gsub(pattern, function(delimiter)
         table.insert(result, index, delimiter)
@@ -71,39 +84,27 @@ local function split_expression(expression)
     return result
 end
 
-local function check_and_return_rest(input_string)
-    if input_string:sub(1, 2) == '0b' then
-        return tonumber(input_string:sub(3), 2)
-    elseif input_string:sub(1, 2) == '0x' then
-        return tonumber(input_string:sub(3), 16)
-    elseif input_string:sub(1, 2) == '0d' then
-        return input_string:sub(3)
-    else
-        return input_string
-    end
-end
-
-local function convert_calculation_to_dec(calc_string)
-    local dec_word = {}
+local function pre_calc_string(calc_string)
     local words_array = split_expression(calc_string)
     for i, word in ipairs(words_array) do
-        table.insert(dec_word, check_and_return_rest(word))
+        if word == '<' then
+            words_array[i-1] = words_array[i-1] * 2^words_array[i+1]
+            words_array[i] = ''
+            words_array[i+1] = ''
+        end
     end
-    return table.concat(dec_word, ' ')
+    return table.concat(words_array, ' ')
 end
 
 function M.expr_prep(input_string)
-    local result_prefix = ''
-    local result_color
-
-    local input_string_eq = pad_with_eq(input_string)
-    local input_string_pad, after_eq = string.match(input_string_eq, '([^=]+)=?(.*)')
-    local output_string = trim(input_string_pad)
-    local calc_string = remove_underscores(output_string)
-    local dec_string = convert_calculation_to_dec(calc_string)
-
-    result_color, result_prefix = identify_base(after_eq)
-    return output_string, calc_string, result_color, result_prefix
+    local input_string_eq_chk = pad_with_eq(input_string)
+    local input_string_pre_eq, after_eq = string.match(input_string_eq_chk, '([^=]+)=?(.*)')
+    local output_string = trim(input_string_pre_eq)
+    local clean_string = remove_underscores(output_string)
+    local post_pre_calculation = pre_calc_string(clean_string)
+    local result_color, result_prefix = identify_base(after_eq)
+    local string_to_calc = post_pre_calculation
+    return output_string, string_to_calc, result_color, result_prefix
 end
 
 return M
