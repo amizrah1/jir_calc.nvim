@@ -57,12 +57,12 @@ end
 
 local function split_expression(expression)
     local result = {}
-    local pattern = '([*^/+\\-])'
     -- Use gmatch to iterate over the parts of the expression
     for part in expression:gmatch("[^*^/+\\-]+") do
         table.insert(result, part)
     end
     -- Use gsub to insert the delimiters into the result table
+    local pattern = '([*^/+\\-])'
     local index = 2
     expression:gsub(pattern, function(delimiter)
         table.insert(result, index, delimiter)
@@ -71,24 +71,38 @@ local function split_expression(expression)
     return result
 end
 
+local function check_and_return_rest(input_string)
+    if input_string:sub(1, 2) == '0b' then
+        return tonumber(input_string:sub(3), 2)
+    elseif input_string:sub(1, 2) == '0x' then
+        return tonumber(input_string:sub(3), 16)
+    elseif input_string:sub(1, 2) == '0d' then
+        return input_string:sub(3)
+    else
+        return input_string
+    end
+end
+
+local function convert_calculation_to_dec(calc_string)
+    local dec_word = {}
+    local words_array = split_expression(calc_string)
+    for i, word in ipairs(words_array) do
+        table.insert(dec_word, check_and_return_rest(word))
+    end
+    return table.concat(dec_word, ' ')
+end
+
 function M.expr_prep(input_string)
     local result_prefix = ''
     local result_color
-    local input_string_pad
-    local output_string
-    local calc_string
-    local after_eq
 
-    local words_array = split_expression('C*D-E*F+A/B-AB^AC')
-    print('Array of words:')
-    for i, word in ipairs(words_array) do
-        print(i, word)
-    end
-    input_string = pad_with_eq(input_string)
-    input_string_pad, after_eq = string.match(input_string, '([^=]+)=?(.*)')
+    local input_string_eq = pad_with_eq(input_string)
+    local input_string_pad, after_eq = string.match(input_string_eq, '([^=]+)=?(.*)')
+    local output_string = trim(input_string_pad)
+    local calc_string = remove_underscores(output_string)
+    local dec_string = convert_calculation_to_dec(calc_string)
+
     result_color, result_prefix = identify_base(after_eq)
-    output_string = trim(input_string_pad)
-    calc_string = remove_underscores(output_string)
     return output_string, calc_string, result_color, result_prefix
 end
 
