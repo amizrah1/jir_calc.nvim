@@ -1,6 +1,5 @@
 local M = {}
 local expr_prep_module = require('jir_calc.expr_prep')
-local common = require('jir_calc.common')
 
 local function is_empty_or_spaces(str)
     return str:match('^%s*$') ~= nil

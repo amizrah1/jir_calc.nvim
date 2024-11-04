@@ -1,4 +1,5 @@
 local M = {}
+local jir_calc = require('jir_calc_setup')
 local common = require('jir_calc.common')
 
 local function identify_base(after_eq)
@@ -39,7 +40,6 @@ local function dec_to_bin(num)
         binary = (num % 2) .. binary
         num = math.floor(num / 2)
     end
-    print(binary)
     return binary == '' and '0' or binary
 end
 
@@ -56,7 +56,7 @@ end
 function M.convert_result(result_str, result_base)
     if result_base == '0b' then
         result_str = dec_to_bin(tonumber(result_str))
-        if common.underscore then
+        if jir_calc.settings.underscore then
             result_str = add_underscores_every_4_chars(result_str)
         end
     elseif result_base == '0x' then
@@ -71,11 +71,11 @@ end
 local function split_expression(expression)
     local result = {}
     -- Use gmatch to iterate over the parts of the expression
-    for part in expression:gmatch("[^<*^/+\\-]+") do
+    for part in expression:gmatch("[^%<*^/+\\-]+") do
         table.insert(result, part)
     end
     -- Use gsub to insert the delimiters into the result table
-    local pattern = '([<*^/+\\-])'
+    local pattern = '([%<*^/+\\-])'
     local index = 2
     expression:gsub(pattern, function(delimiter)
         table.insert(result, index, delimiter)

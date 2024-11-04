@@ -7,7 +7,4 @@ M.HL_Bin    = vim.fn.synIDattr(vim.fn.hlID("String"), "name")
 M.HL_Hex    = vim.fn.synIDattr(vim.fn.hlID("PreProc"), "name")
 M.HL_Error  = vim.fn.synIDattr(vim.fn.hlID("Operator"), "name")
 
--- handle underscore in numbers
-M.underscore = true
-
 return M

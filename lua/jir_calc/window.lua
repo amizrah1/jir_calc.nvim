@@ -1,9 +1,7 @@
 local M = {}
-local common = require('jir_calc.common')
 
 -- Function to open a floating window
 function M.open_window()
-    local buf = vim.api.nvim_create_buf(false, true)
     local width = vim.api.nvim_get_option('columns')
     local height = vim.api.nvim_get_option('lines')
     local win_height = math.ceil(height * 0.3)
