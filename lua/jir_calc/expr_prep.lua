@@ -58,6 +58,7 @@ function M.convert_result(result_str, result_base)
         result_str = dec_to_bin(tonumber(result_str))
         if jir_calc.settings.underscore then
             result_str = add_underscores_every_4_chars(result_str)
+            result_base = '0b_'
         end
     elseif result_base == '0x' then
         result_str = string.format('%X', tonumber(result_str))
