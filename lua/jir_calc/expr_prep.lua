@@ -67,7 +67,7 @@ end
 function M.convert_result(result_str, result_base)
     if result_base == '0b' then
         result_str = dec_to_bin(tonumber(result_str))
-        if jir_calc.settings.underscore then
+        if jir_calc.settings.pad_with_underscore then
             result_str = add_underscores_every_4_chars(result_str)
             result_base = '0b_'
         end
@@ -83,11 +83,11 @@ end
 local function split_expression(expression)
     local result = {}
     -- Use gmatch to iterate over the parts of the expression
-    for part in expression:gmatch("[^=%<*^/+\\-]+") do
+    for part in expression:gmatch("[^=%<>*^/+\\-]+") do
         table.insert(result, part)
     end
     -- Use gsub to insert the delimiters into the result table
-    local pattern = '([=%<*^/+\\-])'
+    local pattern = '([=%<>*^/+\\-])'
     local index = 2
     expression:gsub(pattern, function(delimiter)
         table.insert(result, index, delimiter)
@@ -133,6 +133,12 @@ local function clear_memory()
     _G.jir_calc_Memory = {}
 end
 
+local function reformat(str)
+    str = trim(str)
+    str = split_expression(str)
+    return table.concat(str, ' ')
+end
+
 local function pre_calc_string(calc_string)
     local words_array = split_expression(calc_string)
     for i, word in ipairs(words_array) do
@@ -142,11 +148,18 @@ local function pre_calc_string(calc_string)
             words_array[i] = ''
             words_array[i+1] = ''
         end
+        if word == '>' then
+            words_array[i-1] = words_array[i-1] / 2^words_array[i+1]
+            words_array[i] = ''
+            words_array[i+1] = ''
+        end
         if word == 'ANS' or word == 'ans' or word == 'Ans' then
             words_array[i] = _G.jir_calc_last_result
         elseif starts_with_letter(word) then
             local result_index = search_strings(_G.jir_calc_Memory, word)
-            words_array[i] = _G.jir_calc_Memory[result_index].val
+            if result_index ~= -1 then
+                words_array[i] = _G.jir_calc_Memory[result_index].val
+            end
         end
     end
     return table.concat(words_array, ' ')
@@ -156,7 +169,7 @@ function M.expr_prep(input_string)
     if not is_memory_store(input_string) then
         local input_string_eq_chk = pad_with_eq(input_string)
         local input_string_pre_eq, after_eq = string.match(input_string_eq_chk, '([^=]+)=?(.*)')
-        local output_string = trim(input_string_pre_eq)
+        local output_string = reformat(input_string_pre_eq)
         local clean_string = remove_underscores(output_string)
         local post_pre_calculation = pre_calc_string(clean_string)
         local result_color, result_prefix = identify_base(after_eq)
@@ -168,7 +181,6 @@ function M.expr_prep(input_string)
             clear_memory()
         elseif temp_string == 'MR' then
             temp_string = print_memory()
-            print('show all ' .. temp_string)
         else
             store_in_memory(temp_string)
         end

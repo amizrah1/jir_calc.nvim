@@ -1,7 +1,33 @@
 local M = {}
+local jir_calc = require('jir_calc_setup')
 
 local cmd_buf
 local cmd_win
+local help = {
+    '=b        : to get binary result 5 = 0b101',
+    '=h        : to get hex result (or =x) 12 = 0xC',
+    '0b prefix : send binary by using prefix 0b - 0b0111 = 7',
+    '0x prefix : send hex by using prefix 0x    - 0x0F = 15',
+    '<,> signs : shift n m times - 1<4 = 16',
+    'ANS       : use or ans to get last result into calculation',
+    '\\<Var>    : store value in Memory (any string after backslash)',
+    '\\MC       : clears memory',
+    '\\MR       : recalls memory',
+    '_         : pad with underscore as it will be ignored',
+    '%         : modulo %',
+    'pi        : The value of π (pi).',
+    'sin(x)    : Returns the sine of x (x is in radians). etc.',
+    'asin(x)   : Returns the arcsine of x (in radians). etc.',
+    'sqrt(x)   : Returns the square root of x.',
+    'abs(x)    : Returns the absolute value of x.',
+    'exp(x)    : Returns the value of e^x.',
+    'log(x)    : Returns the natural logarithm of x.',
+    'log10(x)  : Returns the base-10 logarithm of x.',
+    'log(x, base): Returns the logarithm of x with the specified base.',
+    'random()  : Returns a random number between 0 and 1.',
+    'random(n) : Returns a random integer between 1 and n.',
+    'random(m, n): Returns a random integer between m and n.',
+}
 
 local function print_cmd(str)
     vim.api.nvim_buf_set_lines(cmd_buf, 0, -1, false, { str .. ' ' })
@@ -32,6 +58,18 @@ function M.next_cmd_history()
     end
 end
 
+local function print_help(help_buf, win_height)
+    local current_line_count = 0
+
+    for _, str in ipairs(help) do
+        if current_line_count > win_height - 2 then
+            break
+        end
+        vim.api.nvim_buf_set_lines(help_buf, current_line_count, current_line_count, false, { str })
+        current_line_count = current_line_count + 1
+    end
+end
+
 local function print_history(history, main_buf, win_height)
     if #history > win_height - 1 then
         history = vim.list_slice(history, #history - win_height + 2, #history)
@@ -50,7 +88,12 @@ end
 
 -- Function to open a floating window
 function M.open_window()
-    local width = vim.api.nvim_get_option('columns')
+    local width
+    if jir_calc.settings.enable_help_window then
+        width = vim.api.nvim_get_option('columns') * 2 / 3
+    else
+        width = vim.api.nvim_get_option('columns')
+    end
     local height = vim.api.nvim_get_option('lines')
     local win_height = math.ceil(height * 0.3)
     local win_width = math.ceil(width * 0.8)
@@ -76,6 +119,26 @@ function M.open_window()
 
     local win = vim.api.nvim_open_win(main_buf, true, opts)
     vim.api.nvim_buf_set_option(main_buf, 'bufhidden', 'wipe')
+
+    if jir_calc.settings.enable_help_window then
+        -- Create a command input area at the bottom
+        local help_buf = vim.api.nvim_create_buf(false, true)
+        local help_opts = {
+            style = 'minimal',
+            relative = 'editor',
+            width = win_width / 2,
+            height = win_height + 3,
+            row = row,
+            col = col + win_width + 2,
+            border = 'rounded',
+            title = 'help',
+            title_pos = 'center',
+        }
+
+        local help_win = vim.api.nvim_open_win(help_buf, true, help_opts)
+        vim.api.nvim_buf_set_option(help_buf, 'bufhidden', 'wipe')
+        print_help(help_buf, win_height + 3)
+    end
 
     -- Create a command input area at the bottom
     cmd_buf = vim.api.nvim_create_buf(false, true)

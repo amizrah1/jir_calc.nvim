@@ -7,8 +7,10 @@ _G.jir_calc_cmd_history_indx = 0
 _G.jir_calc_last_result = 0
 
 M.settings = {
-    underscore = false,
+    pad_with_underscore = false,
     print_processed = false,
+    enable_help_window = true,
+    reformat_output = false,
     last_answer_access_string = 'ans',
 }
 

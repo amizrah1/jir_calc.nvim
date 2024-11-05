@@ -27,6 +27,25 @@ local function handle_history(expr)
     end
 end
 
+local function evaluate_math_env(expression)
+    local env = {
+        math = math,
+        abs   = math.abs,
+        exp   = math.exp,
+        log   = math.log,
+        log10 = math.log10,
+        sin   = math.sin,
+        cos   = math.cos,
+        tan   = math.tan,
+        asin  = math.asin,
+        sqrt  = math.sqrt,
+        random = math.random,
+        pi    = math.pi,
+        log2 = function(x) return math.log(x) / math.log(2) end
+    }
+    return load('return ' .. expression, 'expression', 't', env)
+end
+
 local function calculate(expr, cmd_buf, main_win)
     local output_string = ''
     local processed_expr, result_color, result_base
@@ -40,7 +59,7 @@ local function calculate(expr, cmd_buf, main_win)
         output_string_w_results = ' '
     else
         output_string, processed_expr, result_color, result_base = expr_prep_module.expr_prep(expr)
-        local result_expr, err = load('return ' .. processed_expr)
+        local result_expr, err = evaluate_math_env(processed_expr)
         if processed_expr == '' then
             output_string_w_results = output_string
         elseif err then
