@@ -11,7 +11,6 @@ M.settings = {
     print_processed = false,
     enable_help_window = true,
     reformat_output = false,
-    last_answer_access_string = 'ans',
 }
 
 function M.setup(opts)
