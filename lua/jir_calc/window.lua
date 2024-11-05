@@ -10,10 +10,10 @@ end
 
 function M.prev_cmd_history()
     local str
-    if #_G.jir_cmd_history > 0 then
-        str = _G.jir_cmd_history[#_G.jir_cmd_history - _G.jir_cmd_history_indx]
-        if _G.jir_cmd_history_indx < #_G.jir_cmd_history - 1 then
-            _G.jir_cmd_history_indx = _G.jir_cmd_history_indx + 1
+    if #_G.jir_calc_cmd_history > 0 then
+        str = _G.jir_calc_cmd_history[#_G.jir_calc_cmd_history - _G.jir_calc_cmd_history_indx]
+        if _G.jir_calc_cmd_history_indx < #_G.jir_calc_cmd_history - 1 then
+            _G.jir_calc_cmd_history_indx = _G.jir_calc_cmd_history_indx + 1
         end
         print_cmd(str)
     end
@@ -21,10 +21,10 @@ end
 
 function M.next_cmd_history()
     local str
-    if #_G.jir_cmd_history > 0 then
-        if _G.jir_cmd_history_indx > 0 then
-            _G.jir_cmd_history_indx = _G.jir_cmd_history_indx - 1
-            str = _G.jir_cmd_history[#_G.jir_cmd_history - _G.jir_cmd_history_indx]
+    if #_G.jir_calc_cmd_history > 0 then
+        if _G.jir_calc_cmd_history_indx > 0 then
+            _G.jir_calc_cmd_history_indx = _G.jir_calc_cmd_history_indx - 1
+            str = _G.jir_calc_cmd_history[#_G.jir_calc_cmd_history - _G.jir_calc_cmd_history_indx]
         else
             str = '> '
         end
@@ -57,10 +57,10 @@ function M.open_window()
     local row = math.ceil((height - win_height) / 2)
     local col = math.ceil((width - win_width) / 2)
 
-    _G.jir_cmd_history_indx = 0
+    _G.jir_calc_cmd_history_indx = 0
     -- Pre-fill the main buffer with empty lines to position the first result at the bottom
     local main_buf = vim.api.nvim_create_buf(false, true)
-    print_history(_G.jir_result_history, main_buf, win_height)
+    print_history(_G.jir_calc_result_history, main_buf, win_height)
     local title = ' Jir Calculator '
     local opts = {
         style = 'minimal',

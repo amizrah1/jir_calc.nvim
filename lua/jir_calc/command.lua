@@ -22,8 +22,8 @@ local function handle_history(expr)
     temp_expr = (temp_expr:gsub(' ', ''))
     if not is_empty_or_spaces(temp_expr) then
         local cmd_history = string.gsub(expr, "%s+$", "")
-        table.insert(_G.jir_cmd_history, cmd_history)
-        _G.jir_cmd_history_indx = 0
+        table.insert(_G.jir_calc_cmd_history, cmd_history)
+        _G.jir_calc_cmd_history_indx = 0
     end
 end
 
@@ -41,7 +41,9 @@ local function calculate(expr, cmd_buf, main_win)
     else
         output_string, processed_expr, result_color, result_base = expr_prep_module.expr_prep(expr)
         local result_expr, err = load('return ' .. processed_expr)
-        if err then
+        if processed_expr == '' then
+            output_string_w_results = output_string
+        elseif err then
             output_string_w_results = 'Loading Error: ' .. result_expr .. " \n" .. err_check_and_convert(err)
         else
             local success, value = pcall(result_expr)
@@ -52,7 +54,7 @@ local function calculate(expr, cmd_buf, main_win)
                 else
                     output_string_w_results = output_string .. ' = ' .. result_string
                 end
-                _G.jir_last_result = result_string
+                _G.jir_calc_last_result = result_string
             else
                 output_string_w_results = 'Input: ' .. processed_expr .. ", Error: ".. err_check_and_convert(err)
                 output_string = output_string_w_results
@@ -65,7 +67,7 @@ local function calculate(expr, cmd_buf, main_win)
     vim.api.nvim_buf_add_highlight(main_buf, -1, result_color, line_count, #output_string + 3, #output_string_w_results)
     vim.api.nvim_win_set_cursor(main_win, { line_count + 1, 0 })
 
-    table.insert(_G.jir_result_history, output_string_w_results)
+    table.insert(_G.jir_calc_result_history, output_string_w_results)
 
     -- Clear the command buffer and keep it in insert mode
     vim.api.nvim_buf_set_lines(cmd_buf, 0, -1, false, { '> ' })

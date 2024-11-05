@@ -8,6 +8,9 @@ local function identify_base(after_eq)
     if string.sub(after_eq, 1, 1) == 'b' then
         result_color = common.HL_Bin
         result_prefix = '0b'
+    elseif string.sub(after_eq, 1, 1) == 'x' then
+        result_color = common.HL_Hex
+        result_prefix = '0x'
     elseif string.sub(after_eq, 1, 1) == 'h' then
         result_color = common.HL_Hex
         result_prefix = '0x'
@@ -17,6 +20,10 @@ local function identify_base(after_eq)
         result_color = common.HL_Dec
     end
     return result_color, result_prefix
+end
+
+local function is_memory_store(input_string)
+    return string.match(input_string, '^\\') ~= nil
 end
 
 local function starts_with_letter(word)
@@ -76,11 +83,11 @@ end
 local function split_expression(expression)
     local result = {}
     -- Use gmatch to iterate over the parts of the expression
-    for part in expression:gmatch("[^%<*^/+\\-]+") do
+    for part in expression:gmatch("[^=%<*^/+\\-]+") do
         table.insert(result, part)
     end
     -- Use gsub to insert the delimiters into the result table
-    local pattern = '([%<*^/+\\-])'
+    local pattern = '([=%<*^/+\\-])'
     local index = 2
     expression:gsub(pattern, function(delimiter)
         table.insert(result, index, delimiter)
@@ -89,32 +96,84 @@ local function split_expression(expression)
     return result
 end
 
+local function search_strings(arr, search_string)
+    for i, cell in ipairs(arr) do
+        if cell.str == search_string then
+            return i
+        end
+    end
+    return -1
+end
+
+local function print_memory()
+    local result = ''
+    if #_G.jir_calc_Memory == 0 then
+        return 'Memory is empty'
+    end
+    for _, word in ipairs(_G.jir_calc_Memory) do
+        result = result .. " { " .. word.str .. ' = ' .. word.val .. ' }'
+    end
+    return result
+end
+
+local function store_in_memory(input_string)
+    local words_array = split_expression(input_string)
+    if starts_with_letter(words_array[1]) then
+        if words_array[2] == '=' then
+            local name = words_array[1]:gsub(' ', '')
+            local val = words_array[3]:gsub(' ', '')
+            table.insert(_G.jir_calc_Memory, {str = name, val = val})
+            return true
+        end
+    end
+    return false
+end
+
+local function clear_memory()
+    _G.jir_calc_Memory = {}
+end
+
 local function pre_calc_string(calc_string)
     local words_array = split_expression(calc_string)
     for i, word in ipairs(words_array) do
+        word = trim(word)
         if word == '<' then
             words_array[i-1] = words_array[i-1] * 2^words_array[i+1]
             words_array[i] = ''
             words_array[i+1] = ''
         end
         if word == 'ANS' or word == 'ans' or word == 'Ans' then
-            words_array[i] = _G.jir_last_result
+            words_array[i] = _G.jir_calc_last_result
         elseif starts_with_letter(word) then
-            words_array[i] = _G.jir_last_result
+            local result_index = search_strings(_G.jir_calc_Memory, word)
+            words_array[i] = _G.jir_calc_Memory[result_index].val
         end
     end
     return table.concat(words_array, ' ')
 end
 
 function M.expr_prep(input_string)
-    local input_string_eq_chk = pad_with_eq(input_string)
-    local input_string_pre_eq, after_eq = string.match(input_string_eq_chk, '([^=]+)=?(.*)')
-    local output_string = trim(input_string_pre_eq)
-    local clean_string = remove_underscores(output_string)
-    local post_pre_calculation = pre_calc_string(clean_string)
-    local result_color, result_prefix = identify_base(after_eq)
-    local string_to_calc = post_pre_calculation
-    return output_string, string_to_calc, result_color, result_prefix
+    if not is_memory_store(input_string) then
+        local input_string_eq_chk = pad_with_eq(input_string)
+        local input_string_pre_eq, after_eq = string.match(input_string_eq_chk, '([^=]+)=?(.*)')
+        local output_string = trim(input_string_pre_eq)
+        local clean_string = remove_underscores(output_string)
+        local post_pre_calculation = pre_calc_string(clean_string)
+        local result_color, result_prefix = identify_base(after_eq)
+        local string_to_calc = post_pre_calculation
+        return output_string, string_to_calc, result_color, result_prefix
+    else
+        local temp_string = trim(string.sub(input_string, 2))
+        if temp_string == 'MC' then
+            clear_memory()
+        elseif temp_string == 'MR' then
+            temp_string = print_memory()
+            print('show all ' .. temp_string)
+        else
+            store_in_memory(temp_string)
+        end
+        return temp_string, '', '', ''
+    end
 end
 
 return M

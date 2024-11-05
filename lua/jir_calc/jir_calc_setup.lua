@@ -1,10 +1,10 @@
 local M = {}
 
-_G.jir_result_history = _G.jir_result_history or {}
-_G.jir_cmd_history = _G.jir_cmd_history or {}
-_G.jir_Memory = _G.jir_Memory or {}
-_G.jir_cmd_history_indx = 0
-_G.jir_last_result = 0
+_G.jir_calc_result_history = _G.jir_calc_result_history or {}
+_G.jir_calc_cmd_history = _G.jir_calc_cmd_history or {}
+_G.jir_calc_Memory = _G.jir_calc_Memory or {}
+_G.jir_calc_cmd_history_indx = 0
+_G.jir_calc_last_result = 0
 
 M.settings = {
     underscore = false,
