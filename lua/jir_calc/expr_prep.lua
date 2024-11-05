@@ -19,6 +19,10 @@ local function identify_base(after_eq)
     return result_color, result_prefix
 end
 
+local function starts_with_letter(word)
+    return string.match(word, "^[a-zA-Z]") ~= nil
+end
+
 local function pad_with_eq(input_string)
     if not string.find(input_string, '=') then
         input_string = input_string .. ' = '
@@ -92,6 +96,11 @@ local function pre_calc_string(calc_string)
             words_array[i-1] = words_array[i-1] * 2^words_array[i+1]
             words_array[i] = ''
             words_array[i+1] = ''
+        end
+        if word == 'ANS' or word == 'ans' or word == 'Ans' then
+            words_array[i] = _G.jir_last_result
+        elseif starts_with_letter(word) then
+            words_array[i] = _G.jir_last_result
         end
     end
     return table.concat(words_array, ' ')

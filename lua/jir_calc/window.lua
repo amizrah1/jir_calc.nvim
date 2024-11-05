@@ -4,7 +4,6 @@ local cmd_buf
 local cmd_win
 
 local function print_cmd(str)
-    str = str:gsub('^%s*(.-)%s*$', '%1') -- trim
     vim.api.nvim_buf_set_lines(cmd_buf, 0, -1, false, { str .. ' ' })
     vim.api.nvim_win_set_cursor(cmd_win, { 1, #str })
 end
@@ -71,7 +70,6 @@ function M.open_window()
         row = row,
         col = col,
         border = 'rounded',
-        focusable = false,
         title = title,
         title_pos = 'center',
     }
