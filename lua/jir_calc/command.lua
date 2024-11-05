@@ -23,6 +23,8 @@ function M.handle_command(main_win)
     local cmd_buf = vim.api.nvim_get_current_buf()
     local expr = vim.api.nvim_buf_get_lines(cmd_buf, 0, -1, false)[1]
 
+    table.insert(_G.jir_cmd_history, expr)
+    _G.jir_cmd_history_indx = 0
     expr = expr:sub(3) -- Strip the leading '> ' from the expression
     local main_buf
     local line_count

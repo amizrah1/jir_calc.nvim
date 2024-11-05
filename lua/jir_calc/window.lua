@@ -1,5 +1,38 @@
 local M = {}
 
+local cmd_buf
+local cmd_win
+
+local function print_cmd(str)
+    str = str:gsub('^%s*(.-)%s*$', '%1') -- trim
+    vim.api.nvim_buf_set_lines(cmd_buf, 0, -1, false, { str .. ' ' })
+    vim.api.nvim_win_set_cursor(cmd_win, { 1, #str })
+end
+
+function M.prev_cmd_history()
+    local str
+    if #_G.jir_cmd_history > 0 then
+        str = _G.jir_cmd_history[#_G.jir_cmd_history - _G.jir_cmd_history_indx]
+        if _G.jir_cmd_history_indx < #_G.jir_cmd_history - 1 then
+            _G.jir_cmd_history_indx = _G.jir_cmd_history_indx + 1
+        end
+        print_cmd(str)
+    end
+end
+
+function M.next_cmd_history()
+    local str
+    if #_G.jir_cmd_history > 0 then
+        if _G.jir_cmd_history_indx > 0 then
+            _G.jir_cmd_history_indx = _G.jir_cmd_history_indx - 1
+            str = _G.jir_cmd_history[#_G.jir_cmd_history - _G.jir_cmd_history_indx]
+        else
+            str = '> '
+        end
+        print_cmd(str)
+    end
+end
+
 local function print_history(history, main_buf, win_height)
     if #history > win_height - 1 then
         history = vim.list_slice(history, #history - win_height + 2, #history)
@@ -25,6 +58,7 @@ function M.open_window()
     local row = math.ceil((height - win_height) / 2)
     local col = math.ceil((width - win_width) / 2)
 
+    _G.jir_cmd_history_indx = 0
     -- Pre-fill the main buffer with empty lines to position the first result at the bottom
     local main_buf = vim.api.nvim_create_buf(false, true)
     print_history(_G.jir_result_history, main_buf, win_height)
@@ -46,7 +80,7 @@ function M.open_window()
     vim.api.nvim_buf_set_option(main_buf, 'bufhidden', 'wipe')
 
     -- Create a command input area at the bottom
-    local cmd_buf = vim.api.nvim_create_buf(false, true)
+    cmd_buf = vim.api.nvim_create_buf(false, true)
     local cmd_opts = {
         style = 'minimal',
         relative = 'editor',
@@ -56,21 +90,23 @@ function M.open_window()
         col = col,
         border = 'rounded',
     }
-    local cmd_win = vim.api.nvim_open_win(cmd_buf, true, cmd_opts)
+    cmd_win = vim.api.nvim_open_win(cmd_buf, true, cmd_opts)
     vim.api.nvim_buf_set_option(cmd_buf, 'bufhidden', 'wipe')
 
-    -- Set initial content of the command buffer
+    -- Switch to insert mode in the commad input window
     vim.api.nvim_buf_set_lines(cmd_buf, 0, -1, false, { '> ' })
-    vim.api.nvim_buf_set_keymap(cmd_buf, 'i', '<CR>', "<cmd>lua require'jir_calc.command'.handle_command(" .. win .. ")<CR>", { noremap = true, silent = true })
-    vim.api.nvim_buf_set_keymap(main_buf, 'i', '<Esc>', "<cmd>lua require'jir_calc.window'.close_windows()<CR><ESC>", { noremap = true, silent = true })
-    vim.api.nvim_buf_set_keymap(main_buf, 'n', '<Esc>', "<cmd>lua require'jir_calc.window'.close_windows()<CR><ESC>", { noremap = true, silent = true })
-    vim.api.nvim_buf_set_keymap(cmd_buf, 'i', '<Esc>', "<cmd>lua require'jir_calc.window'.close_windows()<CR><ESC>", { noremap = true, silent = true })
-    vim.api.nvim_buf_set_keymap(cmd_buf, 'n', '<Esc>', "<cmd>lua require'jir_calc.window'.close_windows()<CR><ESC>", { noremap = true, silent = true })
-
-    -- Switch to insert mode in the comma:nd input window
     vim.api.nvim_set_current_win(cmd_win)
     vim.api.nvim_command('startinsert')
     vim.api.nvim_win_set_cursor(cmd_win, { 1, 3 }) -- Position cursor after '> '
+
+    -- Set initial content of the command buffer
+    vim.api.nvim_buf_set_keymap(cmd_buf,  'i', '<CR>',   "<cmd>lua require'jir_calc.command'.handle_command(" .. win .. ")<CR>", { noremap = true, silent = true })
+    vim.api.nvim_buf_set_keymap(main_buf, 'i', '<Esc>',  "<cmd>lua require'jir_calc.window'.close_windows()<CR><ESC>", { noremap = true, silent = true })
+    vim.api.nvim_buf_set_keymap(main_buf, 'n', '<Esc>',  "<cmd>lua require'jir_calc.window'.close_windows()<CR><ESC>", { noremap = true, silent = true })
+    vim.api.nvim_buf_set_keymap(cmd_buf,  'i', '<Esc>',  "<cmd>lua require'jir_calc.window'.close_windows()<CR><ESC>", { noremap = true, silent = true })
+    vim.api.nvim_buf_set_keymap(cmd_buf,  'n', '<Esc>',  "<cmd>lua require'jir_calc.window'.close_windows()<CR><ESC>", { noremap = true, silent = true })
+    vim.api.nvim_buf_set_keymap(cmd_buf,  'i', '<Up>',   "<cmd>lua require'jir_calc.window'.prev_cmd_history()<CR>", { noremap = true, silent = true })
+    vim.api.nvim_buf_set_keymap(cmd_buf,  'i', '<Down>', "<cmd>lua require'jir_calc.window'.next_cmd_history()<CR>", { noremap = true, silent = true })
 
     return win, cmd_win
 end
