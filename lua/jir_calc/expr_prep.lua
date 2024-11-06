@@ -1,5 +1,5 @@
 local M = {}
-local jir_calc = require('jir_calc_setup')
+local jir_calc = require('jir_calc.jir_calc_setup')
 local common = require('jir_calc.common')
 
 local function identify_base(after_eq)

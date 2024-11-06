@@ -1,5 +1,5 @@
 local M = {}
-local jir_calc = require('jir_calc_setup')
+local jir_calc = require('jir_calc.jir_calc_setup')
 local expr_prep_module = require('jir_calc.expr_prep')
 local common= require('jir_calc.common')
 

@@ -1,5 +1,5 @@
 local M = {}
-local jir_calc = require('jir_calc_setup')
+local jir_calc = require('jir_calc.jir_calc_setup')
 
 local cmd_buf
 local cmd_win
@@ -131,7 +131,7 @@ function M.open_window()
             row = row,
             col = col + win_width + 2,
             border = 'rounded',
-            title = 'help',
+            title = ' help ',
             title_pos = 'center',
         }
 
