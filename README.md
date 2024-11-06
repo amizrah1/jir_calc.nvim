@@ -9,12 +9,20 @@ jir_calc.nvim
 =============
 
 This plugin provides a floating window with a command input area at the bottom.
-```require('jir_calc_setup').setup({
-    pad_with_underscore = false,        -- print '_' after 4 char 0b_0011_0011
-    print_processed = false,            -- print processed string and not input string  
-    enable_help_window = true,          -- enable help window
-    reformat_output = false,            -- reformat output to 4 char 0b0011_0011
-   })
+```lua
+return {
+    'amizrah1/jir_calc.nvim',
+    name = 'jir_calc',
+    config = function()
+        require('jir_calc.jir_calc_setup').setup({
+            pad_with_underscore = true,
+            enable_help_window = true,
+            reformat_output = true,
+            print_processed = false,
+        })
+        vim.keymap.set('n', '<leader>m',       function() require('jir_calc.window').open_window() end , { desc = 'Jir Calculator' })
+    end
+}
 ```
 Usage:
 ------

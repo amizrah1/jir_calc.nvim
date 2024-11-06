@@ -47,6 +47,7 @@ end
 
 local function dec_to_bin(num)
     local binary = ''
+    num = math.floor(num)
     while num > 0 do
         binary = (num % 2) .. binary
         num = math.floor(num / 2)
