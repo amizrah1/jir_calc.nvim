@@ -90,7 +90,7 @@ end
 function M.open_window()
     local width
     if jir_calc.settings.enable_help_window then
-        width = vim.api.nvim_get_option('columns') * 2 / 3
+        width = math.ceil(vim.api.nvim_get_option('columns') * 2 / 3)
     else
         width = vim.api.nvim_get_option('columns')
     end
@@ -126,7 +126,7 @@ function M.open_window()
         local help_opts = {
             style = 'minimal',
             relative = 'editor',
-            width = win_width / 2,
+            width = math.ceil(win_width / 2),
             height = win_height + 3,
             row = row,
             col = col + win_width + 2,
