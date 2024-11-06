@@ -7,7 +7,6 @@ calculator inside neovim
 
 jir_calc.nvim
 =============
-
 This plugin provides a floating window with a command input area at the bottom.
 ```lua
 return {
