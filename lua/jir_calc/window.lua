@@ -3,6 +3,11 @@ local jir_calc = require('jir_calc.jir_calc_setup')
 
 local cmd_buf
 local cmd_win
+local help_buf
+local help_win
+local main_buf
+local main_win
+
 local help = {
     '=b        : to get binary result 5 = 0b101',
     '=h        : to get hex result (or =x) 12 = 0xC',
@@ -88,6 +93,13 @@ end
 
 -- Function to open a floating window
 function M.open_window()
+    -- Check if the current buffer is unnamed and name it
+--    local current_buf = vim.api.nvim_get_current_buf()
+--    local buf_name = vim.api.nvim_buf_get_name(current_buf)
+--    if buf_name == "" then
+--        vim.api.nvim_buf_set_name(current_buf, "Unnamed Buffer")
+--    end
+
     local width
     if jir_calc.settings.enable_help_window then
         width = math.ceil(vim.api.nvim_get_option_value('columns', { }) * 2 / 3)
@@ -99,10 +111,10 @@ function M.open_window()
     local win_width = math.ceil(width * 0.8)
     local row = math.ceil((height - win_height) / 2)
     local col = math.ceil((width - win_width) / 2)
-
     _G.jir_calc_cmd_history_indx = 0
     -- Pre-fill the main buffer with empty lines to position the first result at the bottom
-    local main_buf = vim.api.nvim_create_buf(false, true)
+    main_buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_name(main_buf, "JirCalcMain")
     print_history(_G.jir_calc_result_history, main_buf, win_height)
     local title = ' Jir Calculator '
     local opts = {
@@ -118,11 +130,13 @@ function M.open_window()
     }
 
     local win = vim.api.nvim_open_win(main_buf, true, opts)
+    main_win = win
     vim.api.nvim_set_option_value('bufhidden', 'wipe', { buf = main_buf })
 
     if jir_calc.settings.enable_help_window then
         -- Create a command input area at the bottom
-        local help_buf = vim.api.nvim_create_buf(false, true)
+        help_buf = vim.api.nvim_create_buf(false, true)
+        vim.api.nvim_buf_set_name(main_buf, "JirCalcHelp")
         local help_opts = {
             style = 'minimal',
             relative = 'editor',
@@ -134,13 +148,14 @@ function M.open_window()
             title = ' help ',
             title_pos = 'center',
         }
-        local help_win = vim.api.nvim_open_win(help_buf, true, help_opts)
+        help_win = vim.api.nvim_open_win(help_buf, true, help_opts)
         vim.api.nvim_set_option_value('bufhidden', 'wipe', { buf = help_buf })
         print_help(help_buf, win_height + 3)
     end
 
     -- Create a command input area at the bottom
     cmd_buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_name(main_buf, "JirCalcCMD")
     local cmd_opts = {
         style = 'minimal',
         relative = 'editor',
@@ -174,20 +189,11 @@ function M.open_window()
 
     return win, cmd_win
 end
-
--- Function to close both floating windows
 function M.close_windows()
-    local wins = vim.api.nvim_list_wins()
-    for _, win in ipairs(wins) do
-        local buf = vim.api.nvim_win_get_buf(win)
-        local buf_name = vim.api.nvim_buf_get_name(buf)
-        if buf_name == '' then
-            vim.api.nvim_win_close(win, true)
-        end
-    end
+    vim.api.nvim_win_close(cmd_win, true)
+    vim.api.nvim_win_close(main_win, true)
+    vim.api.nvim_win_close(help_win, true)
 end
 
 return M
-
-
 
