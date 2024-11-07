@@ -93,13 +93,6 @@ end
 
 -- Function to open a floating window
 function M.open_window()
-    -- Check if the current buffer is unnamed and name it
---    local current_buf = vim.api.nvim_get_current_buf()
---    local buf_name = vim.api.nvim_buf_get_name(current_buf)
---    if buf_name == "" then
---        vim.api.nvim_buf_set_name(current_buf, "Unnamed Buffer")
---    end
-
     local width
     if jir_calc.settings.enable_help_window then
         width = math.ceil(vim.api.nvim_get_option_value('columns', { }) * 2 / 3)
