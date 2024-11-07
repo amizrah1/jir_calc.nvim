@@ -120,6 +120,7 @@ function M.open_window()
     local win = vim.api.nvim_open_win(main_buf, true, opts)
     vim.api.nvim_buf_set_option(main_buf, 'bufhidden', 'wipe')
 
+ 
     if jir_calc.settings.enable_help_window then
         -- Create a command input area at the bottom
         local help_buf = vim.api.nvim_create_buf(false, true)
@@ -153,6 +154,8 @@ function M.open_window()
     }
     cmd_win = vim.api.nvim_open_win(cmd_buf, true, cmd_opts)
     vim.api.nvim_buf_set_option(cmd_buf, 'bufhidden', 'wipe')
+    vim.api.nvim_buf_set_option(cmd_buf, 'buftype', 'prompt')
+    vim.fn.prompt_setprompt(cmd_buf, '> ')
 
     -- Switch to insert mode in the commad input window
     vim.api.nvim_buf_set_lines(cmd_buf, 0, -1, false, { '> ' })
