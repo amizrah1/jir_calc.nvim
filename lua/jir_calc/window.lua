@@ -90,11 +90,11 @@ end
 function M.open_window()
     local width
     if jir_calc.settings.enable_help_window then
-        width = math.ceil(vim.api.nvim_get_option('columns') * 2 / 3)
+        width = math.ceil(vim.api.nvim_get_option_value('columns', { }) * 2 / 3)
     else
-        width = vim.api.nvim_get_option('columns')
+        width = vim.api.nvim_get_option_value('columns', { })
     end
-    local height = vim.api.nvim_get_option('lines')
+    local height = vim.api.nvim_get_option_value('lines', { })
     local win_height = math.ceil(height * 0.3)
     local win_width = math.ceil(width * 0.8)
     local row = math.ceil((height - win_height) / 2)
@@ -118,9 +118,8 @@ function M.open_window()
     }
 
     local win = vim.api.nvim_open_win(main_buf, true, opts)
-    vim.api.nvim_buf_set_option(main_buf, 'bufhidden', 'wipe')
+    vim.api.nvim_set_option_value('bufhidden', 'wipe', { buf = main_buf })
 
- 
     if jir_calc.settings.enable_help_window then
         -- Create a command input area at the bottom
         local help_buf = vim.api.nvim_create_buf(false, true)
@@ -135,9 +134,8 @@ function M.open_window()
             title = ' help ',
             title_pos = 'center',
         }
-
         local help_win = vim.api.nvim_open_win(help_buf, true, help_opts)
-        vim.api.nvim_buf_set_option(help_buf, 'bufhidden', 'wipe')
+        vim.api.nvim_set_option_value('bufhidden', 'wipe', { buf = help_buf })
         print_help(help_buf, win_height + 3)
     end
 
@@ -153,8 +151,10 @@ function M.open_window()
         border = 'rounded',
     }
     cmd_win = vim.api.nvim_open_win(cmd_buf, true, cmd_opts)
-    vim.api.nvim_buf_set_option(cmd_buf, 'bufhidden', 'wipe')
-    vim.api.nvim_buf_set_option(cmd_buf, 'buftype', 'prompt')
+
+    vim.api.nvim_set_option_value('bufhidden', 'wipe', { buf = cmd_buf })
+    vim.api.nvim_set_option_value('buftype', 'prompt', { buf = cmd_buf })
+
     vim.fn.prompt_setprompt(cmd_buf, '> ')
 
     -- Switch to insert mode in the commad input window
